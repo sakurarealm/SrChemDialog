@@ -1,0 +1,368 @@
+sr-dialog:
+  options:
+    startX: "w*0.5"
+    startY: "h*0.5"
+    consume: true
+    script:
+      methods: |
+        var guiCacheMap = GuiScreen.getCacheMap();
+        var dataMap = GuiOptions.getData();
+        var get_millisecond_tick_manager = () => {
+            let manager = guiCacheMap.get("millisecond_tick_manager");
+            if (manager != null) {
+                return manager;
+            }
+
+            let self = {
+                "last_timestamp": 0,
+                "registered_tick_funcs": {:}
+            };
+
+            self["register_tick_func"] = (name, func) => {
+                self.registered_tick_funcs[name] = func;
+            };
+
+            self["unregister_tick_func"] = (name) => {
+                self.registered_tick_funcs.remove(name);
+            };
+
+            self["has_tick_func"] = (name) => {
+                return self.registered_tick_funcs.containsKey(name);
+            };
+
+            let on_tick = (tickCount) => {
+                let timestamp = Utils.now();
+                if (self.last_timestamp == 0) {
+                    self.last_timestamp = timestamp;
+                    return -1;
+                }
+                let delta = timestamp - self.last_timestamp;
+                self.last_timestamp = timestamp;
+                for (let func : self.registered_tick_funcs.values()) {
+                    func(delta);
+                }
+                return delta;
+            }
+            self["on_tick"] = on_tick;
+
+            guiCacheMap.put("millisecond_tick_manager", self);
+            return self;
+        }
+        var get_client_service = () => {
+            let service = guiCacheMap.get("client_service");
+            if (service != null) return service;
+
+            let millisecond_tick_manager = get_millisecond_tick_manager();
+
+            let canvas_npc = GuiScreen.getGuiPart("_canvas_npc");
+            let canvas_self = GuiScreen.getGuiPart("_canvas_self");
+            let replay_button = canvas_self.getGuiPart("_button");
+            let self = {
+                "button": GuiScreen.getGuiPart("_button_screen"),
+                "canvas_npc": {
+                    "background" : canvas_npc.getGuiPart("_background"),
+                    "title" : canvas_npc.getGuiPart("_label_conversation_title"),
+                    "content" : canvas_npc.getGuiPart("_label_conversation_npc"),
+                    "npc_model" : canvas_npc.getGuiPart("_entity_npc"),
+                    "npc_model_custom" : canvas_npc.getGuiPart("_entity_npc_custom")
+                },
+                "canvas_self": { 
+                    "canvas": canvas_self,
+                    "background" : canvas_self.getGuiPart("_background"),
+                    "content" : canvas_self.getGuiPart("_label_conversation_self"),
+                    "reply_button": {
+                        "src": replay_button.getSrc(),
+                        "preset_y": replay_button.getPreset("locationY")
+                    },
+                    "reply_button_titles": [...] 
+                }
+            };
+            canvas_self.removeGuiPart("_button");
+            self.canvas_self.background.enable = false;
+
+            self["next_non_color_char"] = (msg, index, sharp_case) => {
+                if (index >= size(msg)) return size(msg);
+                if (msg.charAt(index) == "&" || msg.charAt(index) == "§") {
+                    return self.next_non_color_char(msg, index + 2, false);
+                } else if (msg.charAt(index) == "#") { 
+                    return self.next_non_color_char(msg, index + 8, true);
+                } else if (sharp_case && msg.charAt(index) == "-") {
+                    return self.next_non_color_char(msg, index + 8, true);
+                }
+                return index;
+            };
+        
+            self["get_side"] = (msg) => { 
+                self.canvas_npc.npc_model.enable = true;
+                self.canvas_npc.npc_model_custom.enable = false;
+                if (!msg.startsWith("$$")) return [msg, self.canvas_npc.content];
+                msg = msg.substring(2);
+                let msgs = msg.split("\\$\\$");
+                if (size(msgs) < 2) return [msg, self.canvas_npc.content];
+                let side = msgs[0];
+                if (side == "player") { 
+                    self.canvas_self.background.enable = true;
+                    return [msgs[1], self.canvas_self.content];
+                } 
+        
+                let split_side = side.split(":");
+                if (size(split_side) < 2) return [msgs[1], self.canvas_npc.content];
+
+                let entity_name = split_side[1];
+                let entity_model = split_side[0].toLowerCase();
+
+                self.canvas_npc.npc_model.enable = false;
+                let custom_model = self.canvas_npc.npc_model_custom;
+                custom_model.enable = true;
+                custom_model.setName(entity_name);
+                custom_model.model = entity_model; 
+
+                return [msgs[1], self.canvas_npc.content];
+            };
+            self["animation"] = {
+                "index": 0,
+                "line": 0,
+                "tick_speed": 100, 
+                "messages": [],
+                "replies": [],
+                "delta": 0,
+                "init": (messages, replies) => {
+                    self.animation.messages = messages;
+                    self.animation.replies = replies;
+                    self.animation.index = 0;
+                    self.animation.line = 0;
+                    self.animation.delta = 0;
+                    self.canvas_self.content.setTexts(Arrays.asList(""));
+                    self.canvas_npc.content.setTexts(Arrays.asList(""));
+                    for (title : self.canvas_self.reply_button_titles) {
+                        self.canvas_self.canvas.removeGuiPart(title);
+                    }
+                    self.canvas_self.reply_button_titles.clear();
+                    millisecond_tick_manager.register_tick_func("conversation_animation", self.animation.on_tick);
+                },
+                "on_tick": (delta) => {
+                    self.animation.delta += delta;
+                    if (self.animation.delta < self.animation.tick_speed) return null;
+                    self.animation.delta = 0;
+
+                    if (self.animation.line >= size(self.animation.messages)) {
+                        self.canvas_self.background.enable = false;
+                        self.canvas_self.content.setTexts(Arrays.asList(" "));
+                        self.button.clickScript = "";
+                        self.button.enable = false;
+        
+                        millisecond_tick_manager.unregister_tick_func("conversation_animation");
+                        self.build_buttons(self.animation.replies);
+                        return null;
+                    }
+                    self.button.enable = true;
+
+                    let ret = self.get_side(self.animation.messages[self.animation.line]);
+        
+                    let orginal_msg = ret[0];
+                    let label = ret[1];
+        
+                    let next_index = self.next_non_color_char(orginal_msg, self.animation.index, false); 
+                    let clipped_msg = orginal_msg.substring(0, next_index);
+                    self.animation.index = next_index + 1; 
+                    if (self.animation.index < size(orginal_msg)) 
+                        clipped_msg = clipped_msg + "_";
+                    else {
+                        self.animation.line += 1; 
+                        millisecond_tick_manager.unregister_tick_func("conversation_animation");
+                    }
+        
+                    label.setTexts(Arrays.asList(clipped_msg));
+                    self.button.clickScript = "get_client_service().animation.next();";
+                },
+                "next": () => {
+                    if (millisecond_tick_manager.has_tick_func("conversation_animation")) {
+                        self.animation.index = size(self.animation.messages[self.animation.line]);
+                    } else {
+                        self.animation.index = 0;
+                        millisecond_tick_manager.register_tick_func("conversation_animation", self.animation.on_tick);
+                    }
+                }
+            };
+
+            self["build_buttons"] = (replies) => {
+                if (replies == null || size(replies) == 0) {
+                    GuiProxy.runDos("open<->null");
+                    return null;
+                }
+                for (let i = 0; i < size(replies); i++) {
+                    let reply = replies[i];
+                    let button_title = "button_reply_" + i;
+                    let new_button = GuiHelper.newPart(
+                        self.canvas_self.reply_button.src,
+                        button_title,
+                        self.canvas_self.canvas
+                    );
+                    new_button.setLocationY(self.canvas_self.reply_button.preset_y.replace("{num}", str(i)));
+                    new_button.setTexts(Arrays.asList(reply));
+                    new_button.clickScript = "get_client_service().reply(" + str(i) + ");";
+                    self.canvas_self.canvas.addGuiPart(new_button);
+                    self.canvas_self.reply_button_titles.add(button_title);
+                }
+            };
+
+            self["reply"] = (index) => {
+                GuiScreen.post("reply", {
+                    "selected": index
+                });
+            };
+
+            let test_data = {
+                "title": "Test title",
+                "messages": ["This is a test message", "This is another test message"],
+                "replies": ["This is a test reply", "This is another test reply"]
+            };
+
+            self["load_data"] = (data) => {
+                if (data == null || data.isEmpty()) {
+                    Log.chat("No data");
+                    data = test_data;
+                }
+                self.canvas_npc.content.setTexts(Arrays.asList(data["title"]));
+                self.animation.init(data["messages"], data["replies"]);
+            };
+
+            guiCacheMap.put("client_service", self);
+            return self;
+        }
+      tickScript: |
+        get_millisecond_tick_manager().on_tick(tickCount);
+      dataScript: |
+        get_client_service().load_data(dataMap);
+  _button_screen:
+    type: button
+    defaultPath: ""
+    hoverPath: ""
+    locationX: "w*-0.5"
+    locationY: "h*-0.5"
+    LocationZ: "199"
+    swallow: false
+    width: "w"
+    height: "h"
+
+  _canvas_npc:
+    type: canvas
+    locationX: "w*-0.5"
+    locationY: "h*0.24"
+    locationZ: "99"
+    relativeParts:
+      _background:
+        type: texture
+        path: "textures/dialogue/dhk4.png"
+        locationZ: "-1"
+        width: "w*0.9"
+        height: "h*0.30*0.9"
+
+      _label_conversation_title:
+        type: label
+        align: "left"
+        scale: "w*0.0017"
+        font: "default"
+        texts:
+          - "Dialog Title"
+        locationX: "w*0.2"
+        locationY: "h*0.02"
+
+      _label_conversation_npc:
+        type: label
+        align: "left"
+        scale: 'w*0.002'
+        font: "default"
+        locationX: "w*0.2"
+        locationY: "h*0.06"
+        lineHeight: '20'
+        lineSpace: '1'
+        splitWidth: "w*0.6+40"
+        texts:
+          - "123123123123123123123123123123213213213"
+
+      _entity_npc:
+        type: entity
+        enable: true
+        name: "$cancel"
+        model: 'cursor'
+        followCursor: true
+        lookAtX: "w*0.5"
+        lookAtY: "h*0.5"
+        rotateY: "360"
+        size: "35"
+        width: '10'
+        height: '10'
+        locationX: "w*0.113"
+        locationY: "h*0.21"
+        locationZ: "0"
+
+      _entity_npc_custom:
+        type: entity
+        enable: false
+        name: "Test"
+        model: 'zombie'
+        followCursor: true
+        lookAtX: "w*0.5"
+        lookAtY: "h*0.5"
+        rotateY: "360"
+        size: "35"
+        width: '10'
+        height: '10'
+        locationX: "w*0.113"
+        locationY: "h*0.21"
+        locationZ: "0"
+
+  _canvas_self:
+    type: canvas
+    locationX: "w*-0.4"
+    locationY: "h*-0.1"
+    locationZ: "99"
+    relativeParts:
+      _button:
+        type: button
+        defaultPath: "textures/dialogue/dhk2.png"
+        hoverPath: "textures/dialogue/dhk1.png"
+        locationY: "h*0.07*{num}"
+        locationX: "w*0.3"
+        width: "w*0.4"
+        height: "h*0.07"
+        sync: false
+        texts:
+          - "12123123"
+
+      _background:
+        type: texture
+        path: "textures/dialogue/dhk4.png"
+        locationZ: "-1"
+        width: "w*0.9"
+        height: "h*0.30*0.9"
+
+      _label_conversation_self:
+        type: label
+        align: "left"
+        scale: 'w*0.002'
+        font: "default"
+        locationY: "h*0.05"
+        locationX: "w*0.08"
+        lineHeight: '20'
+        lineSpace: '1'
+        splitWidth: "w*0.6+40"
+        texts:
+          - "123123123123123123123123123123213213213"
+
+      entity_self:
+        type: entity
+        enable: true
+        name: "$cancel"
+        model: 'self'
+        followCursor: true
+        lookAtX: "w*0.5"
+        lookAtY: "h*0.5"
+        rotateY: "360"
+        size: "40"
+        width: '10'
+        height: '10'
+        locationX: "w*0.78"
+        locationY: "h*0.20"
+        locationZ: "0"
