@@ -1,0 +1,10 @@
+.gradle
+.idea
+build
+bin
+./libs/**
+gradlew
+gradlew.bat
+.github/**
+.gradle/**
+gradle/**
