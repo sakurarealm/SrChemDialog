@@ -74,7 +74,7 @@ sr-dialog:
                         "src": replay_button.getSrc(),
                         "preset_y": replay_button.getPreset("locationY")
                     },
-                    "reply_button_titles": [...] 
+                    "reply_buttons": [...] 
                 }
             };
             canvas_self.removeGuiPart("_button");
@@ -134,10 +134,7 @@ sr-dialog:
                     self.animation.delta = 0;
                     self.canvas_self.content.setTexts(Arrays.asList(""));
                     self.canvas_npc.content.setTexts(Arrays.asList(""));
-                    for (title : self.canvas_self.reply_button_titles) {
-                        self.canvas_self.canvas.removeGuiPart(title);
-                    }
-                    self.canvas_self.reply_button_titles.clear();
+
                     millisecond_tick_manager.register_tick_func("conversation_animation", self.animation.on_tick);
                 },
                 "on_tick": (delta) => {
@@ -192,7 +189,7 @@ sr-dialog:
                 }
                 for (let i = 0; i < size(replies); i++) {
                     let reply = replies[i];
-                    let button_title = "button_reply_" + i;
+                    let button_title = "button_reply_" + Utils.now() + i;
                     let new_button = GuiHelper.newPart(
                         self.canvas_self.reply_button.src,
                         button_title,
@@ -202,11 +199,17 @@ sr-dialog:
                     new_button.setTexts(Arrays.asList(reply));
                     new_button.clickScript = "get_client_service().reply(" + str(i) + ");";
                     self.canvas_self.canvas.addGuiPart(new_button);
-                    self.canvas_self.reply_button_titles.add(button_title);
+                    self.canvas_self.reply_buttons.add(new_button);
                 }
             };
 
             self["reply"] = (index) => {
+        
+                for (let i=0; i<size(self.canvas_self.reply_buttons); i++) {
+                    let button = self.canvas_self.reply_buttons[i];
+                    button.enable = false;
+                }
+                self.canvas_self.reply_buttons.clear();
                 GuiScreen.post("reply", {
                     "selected": index
                 });
@@ -223,7 +226,7 @@ sr-dialog:
                     Log.chat("No data");
                     data = test_data;
                 }
-                self.canvas_npc.content.setTexts(Arrays.asList(data["title"]));
+                self.canvas_npc.title.setTexts(Arrays.asList(data["title"]));
                 self.animation.init(data["messages"], data["replies"]);
             };
 
@@ -333,7 +336,7 @@ sr-dialog:
 
       _background:
         type: texture
-        path: "textures/dialogue/dhk4.png"
+        path: "textures/dialogue/dhk3.png"
         locationZ: "-1"
         width: "w*0.9"
         height: "h*0.30*0.9"
