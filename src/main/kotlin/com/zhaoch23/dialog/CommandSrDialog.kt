@@ -9,14 +9,14 @@ import taboolib.expansion.createHelper
 
 
 @CommandHeader(name = "srdialog", aliases = ["srd"], permission = "sr-dialog.command")
-class CommandSrDialog {
+object CommandSrDialog {
 
     @CommandBody
     val main = mainCommand {
         createHelper()
     }
 
-    @CommandBody(aliases = ["rl"])
+    @CommandBody()
     val reload = subCommand {
         execute<CommandSender> { sender, _, _ ->
             SrChemDialog.loadConfiguration(SrChemDialog.instance.dataFolder)
