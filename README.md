@@ -62,3 +62,24 @@ conversation_0_1:
 ![img.png](pictures/img_3_2.png)
 要注意的是，使用这个功能需要配置好萌芽或者其他用于替换模型皮肤的插件。这个功能的本质是显示了一个名字为`name`，
 类型为`model`的实体。
+
+#### 3.3. 假按钮
+在对话中的npc部分对话的开头写入`$$buttons$$`，并将后续文本使用`;`隔开即可将这个对话转变为一个或多个假按钮。
+这个功能可以用于方便制作多个跳转向同一文本语句的按钮。例如：
+```yaml
+conversation_0:
+  npc id: 'adyeshach test2'
+  npc:
+    - 'Hi! {{ sender }}.'
+    - 'I''m conversation tester for Chemdah.'
+    - '$$buttons$$Nice to meet you!;Hello!'
+    - 'Do you like to player a game with me?'
+  format: generic
+  player:
+    - reply: 'Sure!'
+      then: &ab |
+        goto conversation_0_1
+```
+效果展示：
+![img.png](pictures/img_3_3.png)
+在玩家选择了任何一个选项之后, npc都会继续说接下来相同的话语。这个功能节省了写新的conversions的时间。

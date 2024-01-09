@@ -102,9 +102,17 @@ sr-dialog:
                 if (side == "player") { 
                     self.canvas_self.background.enable = true;
                     return [msgs[1], self.canvas_self.content];
-                } 
-        
-        
+                } else if (side == "buttons") {
+                    self.animation.index = size(msgs[1]);
+                    let replies = msgs[1].split("\\;");
+                    self.build_buttons(replies);
+                    for (let i=0; i < size(replies); i++) {
+                        let reply = replies[i];
+                        self.canvas_self.reply_buttons[i].clickScript = "get_client_service().on_click_fake_button('" + reply + "');";
+                    }
+                    return ["", {"setTexts": (texts) => {}}];
+                }
+                
                 let split_side = side.split(":");
                 if (size(split_side) < 2) return [msgs[1], self.canvas_npc.content];
 
@@ -119,6 +127,13 @@ sr-dialog:
 
                 return [msgs[1], self.canvas_npc.content];
             };
+        
+            self["on_click_fake_button"] = (msg) => {
+                self.reset_buttons();
+                self.animation.messages.add(self.animation.line, "$$player$$"+msg);
+                self.animation.next();
+            };
+        
             self["animation"] = {
                 "index": 0,
                 "line": 0,
@@ -143,11 +158,6 @@ sr-dialog:
                     self.animation.delta = 0;
 
                     if (self.animation.line >= size(self.animation.messages)) {
-                        self.canvas_self.background.enable = false;
-                        self.canvas_self.content.setTexts(Arrays.asList(" "));
-                        self.button.clickScript = "";
-                        self.button.enable = false;
-        
                         millisecond_tick_manager.unregister_tick_func("conversation_animation");
                         self.build_buttons(self.animation.replies);
                         return null;
@@ -181,12 +191,23 @@ sr-dialog:
                     }
                 }
             };
+        
+            self["reset_buttons"] = () => {
+                for (let button : self.canvas_self.reply_buttons) {
+                    button.enable = false;
+                }
+            };
 
             self["build_buttons"] = (replies) => {
+                self.canvas_self.background.enable = false;
+                self.canvas_self.content.setTexts(Arrays.asList(" "));
+                self.button.clickScript = "";
+                self.button.enable = false;
                 if (replies == null || size(replies) == 0) {
                     GuiProxy.runDos("open<->null");
                     return null;
                 }
+                self.reset_buttons();
                 for (let i = 0; i < size(replies); i++) {
                     let num_buttons = size(self.canvas_self.reply_buttons);
                     let reply = replies[i];
@@ -194,6 +215,7 @@ sr-dialog:
                         let button = self.canvas_self.reply_buttons[i];
                         button.enable = true;
                         button.setTexts(Arrays.asList(reply));
+                        button.clickScript = "get_client_service().reply(" + str(i) + ");";
                         continue;
                     }
                     let button_title = "button_reply_" + num_buttons;
@@ -211,10 +233,7 @@ sr-dialog:
             };
 
             self["reply"] = (index) => {
-                for (let i=0; i<size(self.canvas_self.reply_buttons); i++) {
-                    let button = self.canvas_self.reply_buttons[i];
-                    button.enable = false;
-                }
+                self.reset_buttons();
                 GuiScreen.post("reply", {
                     "selected": index
                 });
