@@ -91,17 +91,27 @@ sr-dialog:
                 return index;
             };
         
-            self["get_side"] = (msg) => { 
+            self["get_render"] = (msg) => { 
+                self.button.enable = true;
+                self.button.clickScript = "get_client_service().animation.next();";
                 self.canvas_npc.npc_model.enable = true;
                 self.canvas_npc.npc_model_custom.enable = false;
-                if (!msg.startsWith("$$")) return [msg, self.canvas_npc.content];
+        
+                let renderer = {
+                    "texts": msg,
+                    "setTexts": (texts) => self.canvas_npc.content.setTexts(texts)
+                };
+        
+                if (!msg.startsWith("$$")) return renderer;
                 msg = msg.substring(2);
                 let msgs = msg.split("\\$\\$");
-                if (size(msgs) < 2) return [msg, self.canvas_npc.content];
+                if (size(msgs) < 2) return renderer;
                 let side = msgs[0];
-                if (side == "player") { 
+                if (side == "player") {
                     self.canvas_self.background.enable = true;
-                    return [msgs[1], self.canvas_self.content];
+                    renderer.texts = msgs[1];
+                    renderer.setTexts = (texts) => self.canvas_self.content.setTexts(texts);
+                    return renderer;
                 } else if (side == "buttons") {
                     self.animation.index = size(msgs[1]);
                     let replies = msgs[1].split("\\;");
@@ -110,9 +120,11 @@ sr-dialog:
                         let reply = replies[i];
                         self.canvas_self.reply_buttons[i].clickScript = "get_client_service().on_click_fake_button('" + reply + "');";
                     }
-                    return ["", {"setTexts": (texts) => {}}];
+                    renderer.texts = "";
+                    renderer.setTexts = (texts) => {};
+                    return renderer;
                 }
-                
+        
                 let split_side = side.split(":");
                 if (size(split_side) < 2) return [msgs[1], self.canvas_npc.content];
 
@@ -125,7 +137,8 @@ sr-dialog:
                 custom_model.setName(entity_name);
                 custom_model.model = entity_model; 
 
-                return [msgs[1], self.canvas_npc.content];
+                renderer.texts = msgs[1];
+                return renderer;
             };
         
             self["on_click_fake_button"] = (msg) => {
@@ -138,6 +151,7 @@ sr-dialog:
                 "index": 0,
                 "line": 0,
                 "tick_speed": 100, 
+                "autoplay": false,
                 "messages": [],
                 "replies": [],
                 "delta": 0,
@@ -149,38 +163,38 @@ sr-dialog:
                     self.animation.delta = 0;
                     self.canvas_self.content.setTexts(Arrays.asList(""));
                     self.canvas_npc.content.setTexts(Arrays.asList(""));
-
+        
                     millisecond_tick_manager.register_tick_func("conversation_animation", self.animation.on_tick);
                 },
                 "on_tick": (delta) => {
                     self.animation.delta += delta;
                     if (self.animation.delta < self.animation.tick_speed) return null;
                     self.animation.delta = 0;
-
+        
                     if (self.animation.line >= size(self.animation.messages)) {
                         millisecond_tick_manager.unregister_tick_func("conversation_animation");
+                        if (self.animation.replies == null || size(self.animation.replies) == 0) {
+                            GuiProxy.runDos("open<->null");
+                            return null;
+                        }
                         self.build_buttons(self.animation.replies);
                         return null;
                     }
-                    self.button.enable = true;
-
-                    let ret = self.get_side(self.animation.messages[self.animation.line]);
         
-                    let original_msg = ret[0];
-                    let label = ret[1];
+                    let renderer = self.get_render(self.animation.messages[self.animation.line]);
         
-                    let next_index = self.next_non_color_char(original_msg, self.animation.index, false); 
-                    let clipped_msg = original_msg.substring(0, next_index);
-                    self.animation.index = next_index + 1; 
-                    if (self.animation.index < size(original_msg)) 
+                    let next_index = self.next_non_color_char(renderer.texts, self.animation.index, false);
+                    let clipped_msg = renderer.texts.substring(0, next_index);
+                    self.animation.index = next_index + 1;
+                    if (self.animation.index < size(renderer.texts))
                         clipped_msg = clipped_msg + "_";
                     else {
                         self.animation.line += 1; 
                         millisecond_tick_manager.unregister_tick_func("conversation_animation");
+                        if (self.animation.autoplay) 
+                            self.animation.next();
                     }
-        
-                    label.setTexts(Arrays.asList(clipped_msg));
-                    self.button.clickScript = "get_client_service().animation.next();";
+                    renderer.setTexts(Arrays.asList(clipped_msg));
                 },
                 "next": () => {
                     if (millisecond_tick_manager.has_tick_func("conversation_animation")) {
@@ -203,10 +217,7 @@ sr-dialog:
                 self.canvas_self.content.setTexts(Arrays.asList(" "));
                 self.button.clickScript = "";
                 self.button.enable = false;
-                if (replies == null || size(replies) == 0) {
-                    GuiProxy.runDos("open<->null");
-                    return null;
-                }
+        
                 self.reset_buttons();
                 for (let i = 0; i < size(replies); i++) {
                     let num_buttons = size(self.canvas_self.reply_buttons);
@@ -250,8 +261,22 @@ sr-dialog:
                     Log.chat("No data");
                     data = test_data;
                 }
-                self.canvas_npc.title.setTexts(Arrays.asList(data["title"]));
-                self.animation.init(data["messages"], data["replies"]);
+
+                if (data.containsKey("close") && data["close"] && !self.animation.replies.isEmpty()) {
+                    GuiProxy.runDos("open<->null");
+                    return null;
+                }
+        
+                if (data.containsKey("settings")) {
+                    let settings = data["settings"];
+                    self.animation.autoplay = settings["autoplay"];
+                    self.animation.tick_speed = settings["tick_speed"];
+                }
+
+                if (data.containsKey("title")) {
+                    self.canvas_npc.title.setTexts(Arrays.asList(data["title"]));
+                    self.animation.init(data["messages"], data["replies"]);
+                }
             };
 
             guiCacheMap.put("client_service", self);

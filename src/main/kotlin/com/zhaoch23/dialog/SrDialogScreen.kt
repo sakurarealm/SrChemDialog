@@ -3,7 +3,6 @@ package com.zhaoch23.dialog
 import com.germ.germplugin.api.dynamic.gui.GermGuiScreen
 import ink.ptms.chemdah.core.conversation.PlayerReply
 import ink.ptms.chemdah.core.conversation.Session
-import org.bukkit.Bukkit
 import org.bukkit.configuration.ConfigurationSection
 import org.bukkit.entity.Player
 import taboolib.common5.cbool
@@ -48,8 +47,12 @@ class SrDialogScreen(title: String, configuration: ConfigurationSection) : GermG
                 "replies" to replyStrings
         )
 
-        Bukkit.getLogger().info("Loaded data: $data")
         options.setData(data)
+    }
+
+    fun closeConversation() {
+        // Send a message to the client side to info it to close the GUI
+        options.setData(mapOf("close" to true))
     }
 
     override fun onReceivePost(path: String?,

@@ -8,7 +8,7 @@ import taboolib.common.platform.command.subCommand
 import taboolib.expansion.createHelper
 
 
-@CommandHeader(name = "srdialog", aliases = ["srd"], permission = "sr-dialog.command")
+@CommandHeader(name = "srdialog", aliases = ["srd"], permission = "srdialog.command")
 object CommandSrDialog {
 
     @CommandBody

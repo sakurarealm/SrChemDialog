@@ -27,7 +27,7 @@ object SrChemDialog : Plugin() {
         loadConfiguration(dataFolder)
 
         // Register the theme
-        ThemeSrDialog.register("sr-dialog")
+        ThemeSrDialog.register(ThemeSrDialog.name)
     }
 
     fun loadConfiguration(dataFolder: File) {
