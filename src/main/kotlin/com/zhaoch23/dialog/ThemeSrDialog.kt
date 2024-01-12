@@ -27,7 +27,8 @@ object ThemeSrDialog : Theme<ThemeSrDialogSettings>() {
     }
 
     fun getSessionTitle(session: Session): String {
-        return session.variables["title"]?.toString() ?: session.conversation.option.title
+        val title = session.variables["title"]?.toString() ?: session.conversation.option.title
+        return title.replace("{name}", session.source.name)
     }
 
     @SubscribeEvent
@@ -58,8 +59,7 @@ object ThemeSrDialog : Theme<ThemeSrDialogSettings>() {
                     setClosedHandler { player2, _ ->
                         val currentSession = player2.conversationSession ?: return@setClosedHandler
                         // Close the session if the player closes the GUI
-                        if (getSessionTitle(currentSession).equals(getSessionTitle(currentSession), true)) {
-                            // Bukkit.getLogger().info("Closing session $currentSession")
+                        if (currentSession.conversation.id == session.conversation.id) {
                             currentSession.close(refuse = true)
                         }
                     }
