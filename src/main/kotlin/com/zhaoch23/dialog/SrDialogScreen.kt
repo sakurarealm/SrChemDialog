@@ -56,7 +56,7 @@ class SrDialogScreen(title: String, configuration: ConfigurationSection) : GermG
     }
 
     fun loadSettings(settings: ThemeSrDialogSettings) {
-        options.setData(settings.settings)
+        options.setData(mapOf("settings" to settings.settings))
     }
 
     fun closeConversation() {

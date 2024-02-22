@@ -63,17 +63,17 @@ object ThemeSrDialog : Theme<ThemeSrDialogSettings>() {
                             currentSession.close(refuse = true)
                         }
                     }
-                    loadSettings(settings)
                 }
             }.apply {
+                if (!isOpened) {
+                    openGui(player)
+                    loadSettings(settings)
+                }
                 if (canReply)
                 // If the player can reply, load the data into the GUI
                     loadData(session, message, replies)
                 else
                     loadData(session, message, null)
-                if (!isOpened) {
-                    openGui(player)
-                }
             }
         }
     }
