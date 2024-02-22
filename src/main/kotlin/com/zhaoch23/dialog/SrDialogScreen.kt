@@ -40,6 +40,11 @@ class SrDialogScreen(title: String, configuration: ConfigurationSection) : GermG
             callbackMap.remove("reply")
             listOf()
         }
+        if (messages.isEmpty() && replyStrings.isEmpty()) {
+            // If there is no message and reply, close the GUI
+            closeConversation()
+            return
+        }
         // Load data to the client side
         val data = mapOf(
                 "title" to ThemeSrDialog.getSessionTitle(session),
@@ -48,6 +53,10 @@ class SrDialogScreen(title: String, configuration: ConfigurationSection) : GermG
         )
 
         options.setData(data)
+    }
+
+    fun loadSettings(settings: ThemeSrDialogSettings) {
+        options.setData(settings.settings)
     }
 
     fun closeConversation() {

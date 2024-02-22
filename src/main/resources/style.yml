@@ -1,0 +1,9 @@
+theme-sr-dialog:
+  # 默认颜色
+  default-color: '&7'
+  # 自动播放
+  autoplay: true
+  # 自动播放速度
+  tick-speed: 100
+  # 玩家点击按钮后是否重复对话
+  repeat-button-text: true

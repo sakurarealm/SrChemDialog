@@ -15,8 +15,17 @@ taboolib {
     description {
         dependencies {
             name("Chemdah").with("bukkit")
+            name("GermPlugin").with("bukkit")
         }
     }
+}
+
+version = "1.0.1"
+
+tasks.jar {
+    // Set the archive file name
+    // This will create an output file with the given name and version, for example: 'myapp-1.0.0.jar'
+    archiveFileName.set("SrChemDialog-${version}.jar")
 }
 
 repositories {

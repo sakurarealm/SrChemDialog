@@ -21,7 +21,7 @@ object ThemeSrDialog : Theme<ThemeSrDialogSettings>() {
             SrChemDialog.instance.saveResource("style.yml", false)
         }
 
-        val config = Configuration.loadFromFile(file)
+        val config = Configuration.loadFromFile(file).getConfigurationSection("theme-sr-dialog")!!
 
         return ThemeSrDialogSettings(config)
     }
@@ -63,6 +63,7 @@ object ThemeSrDialog : Theme<ThemeSrDialogSettings>() {
                             currentSession.close(refuse = true)
                         }
                     }
+                    loadSettings(settings)
                 }
             }.apply {
                 if (canReply)

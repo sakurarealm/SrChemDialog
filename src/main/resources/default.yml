@@ -163,7 +163,8 @@ sr-dialog:
             self["settings"] = {
                 "autoplay": false,
                 "tick_speed": 100,
-                "repeat_button_texts": true
+                "repeat_button_texts": true,
+                "default_color": "&7"
             };
         
             self["animation"] = {
@@ -195,7 +196,7 @@ sr-dialog:
                     let renderer = self.get_render(self.animation.messages[0]);
         
                     let next_index = self.next_non_color_char(renderer.texts, self.animation.index, false);
-                    let clipped_msg = renderer.texts.substring(0, next_index);
+                    let clipped_msg = self.settings.default_color + renderer.texts.substring(0, next_index);
                     self.animation.index = next_index + 1;
                     if (self.animation.index < size(renderer.texts))
                         clipped_msg = clipped_msg + "_";
@@ -284,7 +285,9 @@ sr-dialog:
                 if (data.containsKey("settings")) {
                     let settings = data["settings"];
                     self.settings.autoplay = settings["autoplay"];
-                    self.settings.tick_speed = settings["tick_speed"];
+                    self.settings.tick_speed = settings["tick-speed"];
+                    self.settings.repeat_button_texts = settings["repeat-button-texts"];
+                    self.settings.default_color = settings["default-color"];
                 }
 
                 if (data.containsKey("title")) {
