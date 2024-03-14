@@ -20,12 +20,14 @@ taboolib {
     }
 }
 
-version = "1.0.1"
+version = "1.0.2"
 
 tasks.jar {
     // Set the archive file name
     // This will create an output file with the given name and version, for example: 'myapp-1.0.0.jar'
     archiveFileName.set("SrChemDialog-${version}.jar")
+
+    destinationDir = file("E:\\Minecraft\\servers\\spigot_1_12_2\\plugins")
 }
 
 repositories {

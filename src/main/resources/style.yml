@@ -7,3 +7,7 @@ theme-sr-dialog:
   tick-speed: 100
   # 玩家点击按钮后是否重复对话
   repeat-button-text: true
+  # 当现实按钮时关闭玩家的对话框
+  close-player-dialog-when-show-button: true
+  # 玩家是否可以ESC关闭对话框
+  esc-cancel: true

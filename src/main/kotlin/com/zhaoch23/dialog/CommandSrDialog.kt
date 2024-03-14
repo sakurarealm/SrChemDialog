@@ -18,11 +18,17 @@ object CommandSrDialog {
 
     @CommandBody()
     val reload = subCommand {
+        dynamic("from-resource") {
+            execute<CommandSender> { sender, context, _ ->
+                val fromResource = context["from-resource"].toBoolean()
+                SrChemDialog.loadConfiguration(SrChemDialog.instance.dataFolder, fromResource)
+                sender.sendMessage("Reloaded")
+            }
+        }
         execute<CommandSender> { sender, _, _ ->
             SrChemDialog.loadConfiguration(SrChemDialog.instance.dataFolder)
-            sender.sendMessage("command-reload")
+            sender.sendMessage("Reloaded")
         }
-
     }
 
 }

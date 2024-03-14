@@ -1,10 +1,9 @@
-package com.zhaoch23.dialog
+package com.zhaoch23.dialog.theme
 
 import com.germ.germplugin.api.dynamic.gui.GermGuiScreen
 import ink.ptms.chemdah.core.conversation.PlayerReply
 import ink.ptms.chemdah.core.conversation.Session
 import org.bukkit.configuration.ConfigurationSection
-import org.bukkit.entity.Player
 import taboolib.common5.cbool
 import java.util.function.BiConsumer
 
@@ -47,9 +46,9 @@ class SrDialogScreen(title: String, configuration: ConfigurationSection) : GermG
         }
         // Load data to the client side
         val data = mapOf(
-                "title" to ThemeSrDialog.getSessionTitle(session),
-                "messages" to messages,
-                "replies" to replyStrings
+            "title" to ThemeSrDialog.getSessionTitle(session),
+            "messages" to messages,
+            "replies" to replyStrings
         )
 
         options.setData(data)
@@ -64,18 +63,13 @@ class SrDialogScreen(title: String, configuration: ConfigurationSection) : GermG
         options.setData(mapOf("close" to true))
     }
 
-    override fun onReceivePost(path: String?,
-                               contentMap: MutableMap<String, Any>?,
-                               responseMap: MutableMap<String, Any>?) {
+    override fun onReceivePost(
+        path: String?,
+        contentMap: MutableMap<String, Any>?,
+        responseMap: MutableMap<String, Any>?
+    ) {
         callbackMap[path]?.accept(contentMap!!, responseMap!!)
         super.onReceivePost(path, contentMap, responseMap)
-    }
-
-    companion object {
-        const val guiTitle = "sr-dialog"
-
-        fun getTitle(player: Player): String = "sr-dialog-${player.uniqueId}"
-
     }
 
 }
