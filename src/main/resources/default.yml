@@ -205,7 +205,7 @@ sr-dialog:
                 let case = msgs[0];
                 
                 if (case.contains(":")) {
-                    return self.renderers["model"](renderer, case);
+                    return self.renderers["model"](renderer, msgs[1]);
                 }
                 let render_func = self.renderers[case];
                 if (render_func == null) return renderer;
@@ -291,8 +291,10 @@ sr-dialog:
             };
 
             self["build_reply_buttons"] = (replies) => {
-                self.canvas_self.background.enable = false;
-                self.canvas_self.content.setTexts(Arrays.asList(" "));
+                if (self.settings.close_when_button) {
+                    self.canvas_self.background.enable = false;
+                    self.canvas_self.content.setTexts(Arrays.asList(" "));
+                }
                 self.button.clickScript = "";
                 self.button.enable = false;
         
