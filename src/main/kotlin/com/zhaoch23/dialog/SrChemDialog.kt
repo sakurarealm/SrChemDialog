@@ -76,9 +76,9 @@ object SrChemDialog : Plugin() {
                 }
                 config.saveToFile(styleFile)
             }
-
-            config
         }
+
+        ThemeSrDialog.settings = ThemeSrDialog.createConfig()
     }
 
 

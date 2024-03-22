@@ -131,7 +131,6 @@ sr-dialog:
                 self.wait_time = time;
                 millisecond_tick_manager.unregister_tick_func("conversation_animation");
                 millisecond_tick_manager.register_tick_func("waiting", (delta) => {
-                    Log.chat("waiting: " + self.wait_time);
                     self.wait_time -= delta;
                     if (self.wait_time <= 0) {
                         millisecond_tick_manager.unregister_tick_func("waiting");

@@ -20,7 +20,7 @@ taboolib {
     }
 }
 
-version = "1.0.2"
+version = "1.0.2-1"
 
 tasks.jar {
     // Set the archive file name

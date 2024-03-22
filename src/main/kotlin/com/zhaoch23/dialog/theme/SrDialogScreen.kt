@@ -26,9 +26,7 @@ class SrDialogScreen(title: String, configuration: ConfigurationSection) : GermG
                 val selected = contentMap["selected"]?.toString()?.toInt()!!
                 // Kotlin isn't fun :(
                 replies.getOrNull(selected)?.run {
-                    //Bukkit.getLogger().info("Selected reply: $this")
                     check(session).thenApply { b ->
-                        //Bukkit.getLogger().info("Check result: $b")
                         if (b.cbool) select(session)
                     }
                 }
