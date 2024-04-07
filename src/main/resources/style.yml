@@ -3,7 +3,11 @@ theme-sr-dialog:
   default-color: '&7'
   # 自动播放
   autoplay: false
-  # 自动播放速度
+  # 自动在每句话后加上等待(自动播放时有效)
+  auto-wait: true
+  # 等待时间 （ms） (自动播放时有效)
+  auto-wait-time: 2000
+  # 播放速度 (ms)
   tick-speed: 100
   # 玩家点击按钮后是否重复对话
   repeat-button-text: true

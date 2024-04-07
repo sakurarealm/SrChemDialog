@@ -8,9 +8,12 @@ class ThemeSrDialogSettings(root: ConfigurationSection) : ThemeSettings(root) {
     val settings = mapOf(
         "default-color" to root.getString("default-color", "&f")!!,
         "autoplay" to root.getBoolean("autoplay", false),
+        "auto-wait" to root.getBoolean("auto-wait", true),
+        "auto-wait-time" to root.getLong("auto-wait-time", 2000),
         "tick-speed" to root.getLong("tick-speed", 100),
         "repeat-button-text" to root.getBoolean("repeat-button-text", true),
         "close-player-dialog-when-show-button" to root.getBoolean("close-player-dialog-when-show-button", true),
         "esc-cancel" to root.getBoolean("esc-cancel", true),
+
     )
 }
