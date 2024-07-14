@@ -125,7 +125,7 @@ sr-dialog:
                 renderer.isMessage = false;   
                 return renderer;
             };
-            
+        
             self["wait_time"] = 0;
             self["waiting"] = (time) => {
                 self.wait_time = time;
@@ -157,7 +157,7 @@ sr-dialog:
                 renderer.isMessage = false;
                 return renderer;
             };
-            
+        
             self.renderers["forcewait"] = (renderer, msg) => {
                 let wait_time = int(msg);
                 self.waiting(wait_time);
@@ -171,7 +171,7 @@ sr-dialog:
         
             self.renderers["model"] = (renderer, case, msg) => {
                 let split_side = case.split(":");
-                
+        
                 if (size(split_side) < 2) return renderer;
                 let entity_name = split_side[1];
                 let entity_model = split_side[0].toLowerCase();
@@ -181,7 +181,7 @@ sr-dialog:
                 custom_model.enable = true;
                 custom_model.setName(entity_name);
                 custom_model.model = entity_model;
-                
+        
                 renderer.texts = msg;
                 return renderer;
             };
@@ -211,7 +211,7 @@ sr-dialog:
                 let msgs = msg.split("\\$\\$");
                 if (size(msgs) < 2) return renderer;
                 let case = msgs[0];
-                
+        
                 if (case.contains(":")) {
                     return self.renderers["model"](renderer, case, msgs[1]);
                 }
@@ -392,7 +392,7 @@ sr-dialog:
                 }
 
                 if (data.containsKey("close") && data["close"]) {
-                    if (self.animation.replies != null && !self.animation.replies.isEmpty()) {
+                    if ((self.animation.replies != null && !self.animation.replies.isEmpty()) || size(self.animation.messages) == 0) {
                         GuiProxy.runDos("open<->null");
                         return null;
                     } else {
