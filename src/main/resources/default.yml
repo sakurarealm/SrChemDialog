@@ -277,20 +277,15 @@ sr-dialog:
                     self.animation.delta += delta;
                     if (self.animation.delta < self.settings.tick_speed) return null;
                     self.animation.delta = 0;
-                    if (size(self.animation.messages) == 0) {
-                        millisecond_tick_manager.unregister_tick_func("conversation_animation");
-                        if (self.animation.replies == null || self.animation.replies.isEmpty()) {
-                            if (!self.settings.autoplay) {
-                                GuiProxy.runDos("open<->null");
-                            } else {
-                                self.settings.autoplay = false;
-                            } 
-                            return null;
-                        }
-                        self.build_reply_buttons(self.animation.replies);
+                    if (size(self.animation.messages) == 0 && 
+                        (self.animation.replies == null || self.animation.replies.isEmpty()) ) {
+                        if (!self.settings.autoplay) {
+                            GuiProxy.runDos("open<->null");
+                        } else {
+                            self.settings.autoplay = false;
+                        } 
                         return null;
                     }
-        
                     let renderer = self.prerender(self.animation.messages[0]);
         
                     let next_index = size(renderer.texts);
@@ -304,7 +299,12 @@ sr-dialog:
                     else {
                         self.animation.messages.remove(0);
                         millisecond_tick_manager.unregister_tick_func("conversation_animation");
-                        if (self.settings.autoplay && renderer.isMessage) {
+                        if (size(self.animation.messages) == 0 && 
+                            self.animation.replies != null && 
+                            !self.animation.replies.isEmpty() ) {
+                            self.animation.index = 0;
+                            self.build_reply_buttons(self.animation.replies);
+                        } else if (self.settings.autoplay && renderer.isMessage) {
                             self.animation.next();
                         }
                     }
