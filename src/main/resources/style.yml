@@ -7,7 +7,7 @@ theme-sr-dialog:
   auto-wait: true
   # 等待时间 （ms） (自动播放时有效)
   auto-wait-time: 2000
-  # 播放速度 (ms)
+  # 播放速度 (ms), 设置为0则一次性全部显示
   tick-speed: 100
   # 玩家点击按钮后是否重复对话
   repeat-button-text: true
