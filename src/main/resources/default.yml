@@ -250,7 +250,8 @@ sr-dialog:
                 "default_color": "&7",
                 "close_when_button": true,
                 "auto_wait": true,
-                "auto_wait_time": 2000
+                "auto_wait_time": 2000,
+                "parse_placeholders": true
             };
         
             self["animation"] = {
@@ -259,6 +260,14 @@ sr-dialog:
                 "replies": [...],
                 "delta": 0,
                 "init": (messages, replies) => {
+                    if (self.settings.parse_placeholders) {
+                        for (let i=0; i < size(messages); i++) {
+                            messages[i] = PAPI.parse(messages[i]);
+                        }
+                        for (let i=0; i < size(replies); i++) {
+                            replies[i] = PAPI.parse(replies[i]);
+                        }
+                    } 
                     if (self.settings.auto_wait && self.settings.autoplay) {
                         for (let i=0; i < size(messages); i++) { 
                             let m = messages[i];
@@ -277,23 +286,21 @@ sr-dialog:
                     self.animation.delta += delta;
                     if (self.animation.delta < self.settings.tick_speed) return null;
                     self.animation.delta = 0;
-                    if (size(self.animation.messages) == 0) {
-                        millisecond_tick_manager.unregister_tick_func("conversation_animation");
-                        if (self.animation.replies == null || self.animation.replies.isEmpty()) {
-                            if (!self.settings.autoplay) {
-                                GuiProxy.runDos("open<->null");
-                            } else {
-                                self.settings.autoplay = false;
-                            } 
-                            return null;
-                        }
-                        self.build_reply_buttons(self.animation.replies);
+                    if (size(self.animation.messages) == 0 && 
+                        (self.animation.replies == null || self.animation.replies.isEmpty()) ) {
+                        if (!self.settings.autoplay) {
+                            GuiProxy.runDos("open<->null");
+                        } else {
+                            self.settings.autoplay = false;
+                        } 
                         return null;
                     }
-        
                     let renderer = self.prerender(self.animation.messages[0]);
         
-                    let next_index = self.next_non_color_char(renderer.texts, self.animation.index, false);
+                    let next_index = size(renderer.texts);
+                    if (self.settings.tick_speed != 0)
+                        next_index = self.next_non_color_char(renderer.texts, self.animation.index, false);
+
                     let clipped_msg = renderer.texts.substring(0, next_index);
                     self.animation.index = next_index + 1;
                     if (self.animation.index <= size(renderer.texts))
@@ -301,7 +308,12 @@ sr-dialog:
                     else {
                         self.animation.messages.remove(0);
                         millisecond_tick_manager.unregister_tick_func("conversation_animation");
-                        if (self.settings.autoplay && renderer.isMessage) {
+                        if (size(self.animation.messages) == 0 && 
+                            self.animation.replies != null && 
+                            !self.animation.replies.isEmpty() ) {
+                            self.animation.index = 0;
+                            self.build_reply_buttons(self.animation.replies);
+                        } else if (self.settings.autoplay && renderer.isMessage) {
                             self.animation.next();
                         }
                     }
@@ -365,7 +377,7 @@ sr-dialog:
 
             self["reply"] = (index) => {
                 self.on_click_button(self.animation.replies[index]);
-                    
+        
                 self.animation.replies = null;
                 GuiScreen.post("reply", {
                     "selected": index
@@ -388,6 +400,7 @@ sr-dialog:
                     self.settings.close_when_button = settings["close-player-dialog-when-show-button"];
                     self.settings.auto_wait = settings["auto-wait"];
                     self.settings.auto_wait_time = settings["auto-wait-time"];
+                    self.settings.parse_placeholders = settings["parse-placeholders"];  
                     return null;
                 }
 

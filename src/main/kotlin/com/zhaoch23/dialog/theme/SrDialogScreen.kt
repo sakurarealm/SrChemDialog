@@ -3,6 +3,7 @@ package com.zhaoch23.dialog.theme
 import com.germ.germplugin.api.dynamic.gui.GermGuiScreen
 import ink.ptms.chemdah.core.conversation.PlayerReply
 import ink.ptms.chemdah.core.conversation.Session
+import me.clip.placeholderapi.PlaceholderAPI
 import org.bukkit.configuration.ConfigurationSection
 import taboolib.common5.cbool
 import java.util.function.BiConsumer
@@ -42,11 +43,14 @@ class SrDialogScreen(title: String, configuration: ConfigurationSection) : GermG
             closeConversation()
             return
         }
+
+        val parsePlaceholders = ThemeSrDialog.settings.settings["parse-placeholders"] as Boolean
+
         // Load data to the client side
         val data = mapOf(
             "title" to ThemeSrDialog.getSessionTitle(session),
-            "messages" to messages,
-            "replies" to replyStrings
+            "messages" to if (parsePlaceholders) messages.map { PlaceholderAPI.setPlaceholders(session.player, it) } else messages,
+            "replies" to if (parsePlaceholders) replyStrings.map { PlaceholderAPI.setPlaceholders(session.player, it) } else replyStrings
         )
 
         options.setData(data)

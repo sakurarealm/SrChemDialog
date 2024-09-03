@@ -8,3 +8,4 @@ gradlew.bat
 .github/**
 .gradle/**
 gradle/**
+.DS_Store

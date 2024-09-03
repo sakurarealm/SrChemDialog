@@ -58,7 +58,7 @@ object ThemeSrDialog : Theme<ThemeSrDialogSettings>() {
             if (GuiManager.isOpenedGui(player, title)) {
                 GuiManager.getOpenedGui(player, title) as SrDialogScreen
             } else {
-                Bukkit.getLogger().info("[SrChemDialog] Creating sr-dialog GUI for ${player.name}")
+                SrChemDialog.logger.info("[SrChemDialog] Creating sr-dialog GUI for ${player.name}")
                 // Set esc cancel
                 SrChemDialog.germConfig.set("options.esc-cancel", settings.settings["esc-cancel"] as Boolean)
                 SrDialogScreen(title, SrChemDialog.germConfig).apply {

@@ -14,6 +14,6 @@ class ThemeSrDialogSettings(root: ConfigurationSection) : ThemeSettings(root) {
         "repeat-button-text" to root.getBoolean("repeat-button-text", true),
         "close-player-dialog-when-show-button" to root.getBoolean("close-player-dialog-when-show-button", true),
         "esc-cancel" to root.getBoolean("esc-cancel", true),
-
+        "parse-placeholders" to root.getBoolean("parse-placeholders", true),
     )
 }

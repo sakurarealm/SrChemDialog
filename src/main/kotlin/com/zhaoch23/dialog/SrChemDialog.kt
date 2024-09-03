@@ -17,6 +17,11 @@ object SrChemDialog : Plugin() {
     val instance by lazy {
         BukkitPlugin.getInstance()
     }
+
+    val logger by lazy {
+        instance.logger
+    }
+
     lateinit var germConfig: ConfigurationSection
         private set
 

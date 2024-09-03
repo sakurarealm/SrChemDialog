@@ -1,8 +1,8 @@
 plugins {
     `java-library`
     `maven-publish`
-    id("io.izzel.taboolib") version "1.56"
-    id("org.jetbrains.kotlin.jvm") version "1.5.10"
+    id("io.izzel.taboolib") version "1.60"
+    id("org.jetbrains.kotlin.jvm") version "1.6.10"
 }
 
 taboolib {
@@ -16,18 +16,17 @@ taboolib {
         dependencies {
             name("Chemdah").with("bukkit")
             name("GermPlugin").with("bukkit")
+            name("PlaceholderAPI").with("bukkit").optional(true)
         }
     }
 }
 
-version = "1.0.3-4"
+version = "1.0.3-5"
 
 tasks.jar {
     // Set the archive file name
     // This will create an output file with the given name and version, for example: 'myapp-1.0.0.jar'
     archiveFileName.set("SrChemDialog-${version}.jar")
-
-    //destinationDir = file("E:\\Minecraft\\servers\\spigot_1_12_2\\plugins")
 }
 
 repositories {
@@ -56,25 +55,4 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
 configure<JavaPluginConvention> {
     sourceCompatibility = JavaVersion.VERSION_1_8
     targetCompatibility = JavaVersion.VERSION_1_8
-}
-
-publishing {
-    repositories {
-        maven {
-            url = uri("https://repo.tabooproject.org/repository/releases")
-            credentials {
-                username = project.findProperty("taboolibUsername").toString()
-                password = project.findProperty("taboolibPassword").toString()
-            }
-            authentication {
-                create<BasicAuthentication>("basic")
-            }
-        }
-    }
-    publications {
-        create<MavenPublication>("library") {
-            from(components["java"])
-            groupId = project.group.toString()
-        }
-    }
 }
