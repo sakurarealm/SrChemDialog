@@ -15,5 +15,6 @@ class ThemeSrDialogSettings(root: ConfigurationSection) : ThemeSettings(root) {
         "close-player-dialog-when-show-button" to root.getBoolean("close-player-dialog-when-show-button", true),
         "esc-cancel" to root.getBoolean("esc-cancel", true),
         "parse-placeholders" to root.getBoolean("parse-placeholders", true),
+        "hide-hud" to root.getBoolean("hide-hud", true),
     )
 }

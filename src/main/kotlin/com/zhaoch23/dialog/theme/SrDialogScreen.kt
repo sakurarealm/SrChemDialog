@@ -1,6 +1,7 @@
 package com.zhaoch23.dialog.theme
 
 import com.germ.germplugin.api.dynamic.gui.GermGuiScreen
+import com.zhaoch23.dialog.SrChemDialog
 import ink.ptms.chemdah.core.conversation.PlayerReply
 import ink.ptms.chemdah.core.conversation.Session
 import me.clip.placeholderapi.PlaceholderAPI
@@ -74,4 +75,31 @@ class SrDialogScreen(title: String, configuration: ConfigurationSection) : GermG
         super.onReceivePost(path, contentMap, responseMap)
     }
 
+    override fun onOpened() {
+        super.onOpened()
+        if(ThemeSrDialog.settings.settings["hide-hud"] as Boolean) {
+            //hide HUD before start dialog
+            SrChemDialog.instance.server.run {
+//                SrChemDialog.logger.info("Hiding HUD for ${player.name}")
+                dispatchCommand(
+                    consoleSender,
+                    "gp hud hide ${player.name} true"
+                )
+            }
+        }
+    }
+
+    override fun onClosed() {
+        super.onClosed()
+        if(ThemeSrDialog.settings.settings["hide-hud"] as Boolean){
+            //recover HUD to the time before the dialog
+            SrChemDialog.instance.server.run {
+//                SrChemDialog.logger.info("ReShowing HUD for ${player.name}")
+                dispatchCommand(
+                    consoleSender,
+                    "gp hud hide ${player.name} false"
+                )
+            }
+        }
+    }
 }
