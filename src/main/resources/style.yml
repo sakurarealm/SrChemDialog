@@ -17,3 +17,4 @@ theme-sr-dialog:
   esc-cancel: true
   # 是否 parse Placeholder
   parse-placeholders: true
+  hide-hud: true
