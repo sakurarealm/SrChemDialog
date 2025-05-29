@@ -26,7 +26,7 @@ object CommandSrDialog {
             }
         }
         execute<CommandSender> { sender, _, _ ->
-            SrChemDialog.loadConfiguration(SrChemDialog.instance.dataFolder)
+            SrChemDialog.loadConfiguration(SrChemDialog.instance.dataFolder, false)
             sender.sendMessage("Reloaded")
         }
     }
