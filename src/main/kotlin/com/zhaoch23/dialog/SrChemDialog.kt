@@ -32,13 +32,13 @@ object SrChemDialog : Plugin() {
         dataFolder.mkdirs()
 
         // Load the configuration
-        loadConfiguration(dataFolder)
+        loadConfiguration(dataFolder, false)
 
         // Register the theme
         ThemeSrDialog.register(ThemeSrDialog.THEME_NAME)
     }
 
-    fun loadConfiguration(dataFolder: File, fromResource: Boolean=true) {
+    fun loadConfiguration(dataFolder: File, fromResource: Boolean = true) {
         val file = dataFolder.resolve("default.yml")
 
         val reader = InputStreamReader(javaClass.getResourceAsStream("/default.yml")!!)
